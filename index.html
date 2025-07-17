@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stationery Shop Manager</title>
+    <link rel="stylesheet" href="style.css">
+    <!-- Add Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <!-- Add jsPDF library for PDF export -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+</head>
+<body>
+<header>
+    <div class="header-top">
+        <div class="header-left">
+            <h1><i class="fas fa-store"></i> Stationery Shop & Cyber Cafe Manager</h1>
+            <span class="shop-status" id="shop-status">
+                <i class="fas fa-circle"></i> <span id="status-text">OPEN</span>
+            </span>
+        </div>
+        <div class="header-right">
+            <div class="header-info">
+                <div class="date-time">
+                    <div class="date" id="current-date">
+                        <i class="far fa-calendar"></i> <span id="date-text">Loading...</span>
+                    </div>
+                    <div class="time" id="current-time">
+                        <i class="far fa-clock"></i> <span id="time-text">00:00:00</span>
+                    </div>
+                </div>
+                <div class="user-section">
+                    <button class="returns-btn" id="returns-btn" title="Returns & Replacements">
+                        <i class="fas fa-undo"></i>
+                        <span class="returns-badge" id="returns-count">0</span>
+                    </button>
+                    <button class="review-btn" id="review-btn" title="Review Returned Items">
+                        <i class="fas fa-clipboard-check"></i>
+                        <span class="review-badge" id="review-count">0</span>
+                    </button>
+                    <button class="notification-btn" id="notification-btn">
+                        <i class="fas fa-bell"></i>
+                        <span class="notification-badge" id="notification-count">0</span>
+                    </button>
+                    <button class="user-btn" id="user-btn">
+                        <i class="fas fa-user-circle"></i> <span id="user-name">Shopkeeper</span>
+                    </button>
+                    <button class="settings-btn" id="settings-btn">
+                        <i class="fas fa-cog"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="header-bottom">
+        <div class="quick-stats">
+            <div class="stat-item">
+                <i class="fas fa-rupee-sign"></i>
+                <div class="stat-content">
+                    <span class="stat-label">Today's Sales</span>
+                    <span class="stat-value" id="today-sales">₹0</span>
+                </div>
+            </div>
+            <div class="stat-item">
+                <i class="fas fa-shopping-cart"></i>
+                <div class="stat-content">
+                    <span class="stat-label">Transactions</span>
+                    <span class="stat-value" id="today-transactions">0</span>
+                </div>
+            </div>
+            <div class="stat-item alerts">
+                <i class="fas fa-exclamation-triangle"></i>
+                <div class="stat-content">
+                    <span class="stat-label">Low Stock</span>
+                    <span class="stat-value" id="low-stock-count">0</span>
+                </div>
+            </div>
+            <div class="stat-item">
+                <i class="fas fa-boxes"></i>
+                <div class="stat-content">
+                    <span class="stat-label">Products</span>
+                    <span class="stat-value" id="total-products">0</span>
+                </div>
+            </div>
+        </div>
+        <div class="quick-search">
+            <input type="text" id="quick-search" placeholder="Quick search products...">
+            <button id="quick-search-btn"><i class="fas fa-search"></i></button>
+        </div>
+    </div>
+</header>
+
+<!-- Notification Dropdown -->
+<div id="notification-dropdown" class="notification-dropdown">
+    <div class="notification-header">
+        <h3>Notifications</h3>
+        <button id="clear-notifications">Clear All</button>
+    </div>
+    <div id="notification-list" class="notification-list">
+        <!-- Notifications will appear here -->
+    </div>
+</div>
+
+<!-- User Menu Dropdown -->
+<div id="user-dropdown" class="user-dropdown">
+    <div class="user-menu-header">
+        <i class="fas fa-user-circle"></i>
+        <div>
+            <h4 id="dropdown-user-name">Shopkeeper</h4>
+            <span class="user-role">Staff</span>
+        </div>
+    </div>
+    <div class="user-menu-items">
+        <button id="switch-user-btn"><i class="fas fa-exchange-alt"></i> Switch User</button>
+        <button id="owner-login-btn"><i class="fas fa-key"></i> Owner Login</button>
+        <button id="logout-btn"><i class="fas fa-sign-out-alt"></i> Logout</button>
+    </div>
+</div>
+
+<main>
+    <section id="product-management">
+        <h2>List New Product</h2>
+        <form id="add-product-form" class="product-form">
+            <div class="form-row">
+                <div class="form-group full-width">
+                    <input type="text" id="product-name" placeholder="Product Name" required>
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <input type="text" id="single-barcode" placeholder="Single Unit Barcode (e.g., XXXXXXXX11)" required>
+                </div>
+                <div class="form-group">
+                    <input type="number" id="single-price" placeholder="Single Price (Rs.)" step="0.01" required>
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <input type="text" id="bulk-barcode" placeholder="Bulk Barcode (e.g., XXXXXXXX00)">
+                </div>
+                <div class="form-group">
+                    <input type="number" id="bulk-price" placeholder="Bulk Price (Rs.)" step="0.01">
+                </div>
+                <div class="form-group">
+                    <input type="number" id="bulk-quantity" placeholder="Quantity in Bulk Pack">
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <input type="number" id="initial-stock" placeholder="No. of single units" min="0">
+                </div>
+                <div class="form-group">
+                    <input type="number" id="initial-boxes" placeholder="No. of bulk boxes" min="0">
+                </div>
+                <div class="form-group">
+                    <button type="submit" class="btn-primary">Add Product</button>
+                </div>
+            </div>
+        </form>
+
+        <h3>Recently Added Products</h3>
+        <div id="product-list">
+            <!-- Products will be displayed here -->
+        </div>
+    </section>
+
+    <hr>
+
+    <section id="stock-management">
+        <h2>Add Stock to Existing Products</h2>
+        <form id="add-stock-form" class="stock-form">
+            <div class="form-row">
+                <div class="form-group">
+                    <select id="stock-product-select" required>
+                        <option value="">Select Product</option>
+                    </select>
+                </div>
+                <div class="form-group small">
+                    <input type="number" id="add-single-units" placeholder="Add Single Units" min="0">
+                </div>
+                <div class="form-group small">
+                    <input type="number" id="add-bulk-boxes" placeholder="Add Bulk Boxes" min="0">
+                </div>
+                <div class="form-group">
+                    <button type="submit" class="btn-primary btn-large">Add Stock</button>
+                </div>
+            </div>
+        </form>
+        <div id="stock-update-info">
+            <!-- Stock update information will appear here -->
+        </div>
+    </section>
+
+    <hr>
+
+    <section id="pos-system">
+        <h2>Point of Sale (POS)</h2>
+        <div class="pos-input-row">
+            <input type="text" id="barcode-input" placeholder="Scan/Enter Barcode" autofocus>
+            <input type="number" id="pos-quantity-input" placeholder="Qty" value="1" min="1" class="quantity-input">
+            <button id="add-to-cart-btn" class="btn-primary">Add to Cart</button>
+        </div>
+
+        <h3>Current Bill</h3>
+        <div id="cart-items">
+            <!-- Items added to the bill will appear here -->
+        </div>
+        <p class="bill-total">Total: Rs. <span id="bill-total">0.00</span></p>
+        <div class="pos-buttons">
+            <button id="checkout-btn" class="btn-success">Checkout</button>
+            <button id="clear-cart-btn" class="btn-secondary">Clear Cart</button>
+        </div>
+    </section>
+
+    <hr>
+
+    <section id="inventory-view">
+        <h2>Inventory Status</h2>
+        <div class="inventory-controls">
+            <input type="text" id="inventory-search" placeholder="Search products...">
+            <button id="low-stock-filter" class="btn-secondary">Show Low Stock Only</button>
+        </div>
+        <div id="inventory-list">
+            <!-- Current stock levels will be displayed here -->
+        </div>
+    </section>
+
+    <hr>
+
+    <section id="cash-tracking">
+        <h2>Cash Counter</h2>
+        <p class="cash-display">Total Cash: Rs. <span id="cash-total">0.00</span></p>
+        <div class="cash-buttons">
+            <button id="view-sales-btn" class="btn-primary">View Sales History</button>
+            <button id="export-pdf-btn" class="btn-success">Export PDF Report</button>
+            <button id="reset-cash-btn" class="btn-danger">Reset Cash Counter</button>
+        </div>
+        <div id="sales-history" style="display: none;">
+            <!-- Sales history will appear here -->
+        </div>
+    </section>
+</main>
+
+<!-- Returns & Replacements Modal -->
+<div id="returns-modal" class="modal" style="display: none;">
+    <div class="modal-content returns-modal-content">
+        <span class="close-returns-modal">&times;</span>
+        <h2><i class="fas fa-undo"></i> Returns & Replacements</h2>
+
+        <div class="return-tabs">
+            <button class="tab-btn active" data-tab="return">Process Return</button>
+            <button class="tab-btn" data-tab="replacement">Process Replacement</button>
+        </div>
+
+        <div id="return-tab" class="tab-content active">
+            <form id="return-form" class="return-form">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Product Barcode (Single/Bulk)</label>
+                        <input type="text" id="return-barcode" placeholder="Scan/Enter Product Barcode" required>
+                    </div>
+                    <div class="form-group small">
+                        <label>Quantity</label>
+                        <input type="number" id="return-quantity" placeholder="Qty" value="1" min="1" required>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Return Reason</label>
+                        <select id="return-reason" required>
+                            <option value="">Select Return Reason</option>
+                            <option value="defective">Defective Product</option>
+                            <option value="wrong-item">Wrong Item</option>
+                            <option value="customer-request">Customer Request</option>
+                            <option value="other">Other</option>
+                        </select>
+                    </div>
+                </div>
+                <button type="submit" class="btn-warning btn-large">Initiate Return</button>
+            </form>
+            <div id="return-info"></div>
+        </div>
+
+        <div id="replacement-tab" class="tab-content">
+            <form id="replacement-form" class="replacement-form">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Old Product Barcode</label>
+                        <input type="text" id="old-product-barcode" placeholder="Scan Old Product" required>
+                    </div>
+                    <div class="form-group">
+                        <label>New Product Barcode</label>
+                        <input type="text" id="new-product-barcode" placeholder="Scan New Product" required>
+                    </div>
+                    <div class="form-group small">
+                        <label>Quantity</label>
+                        <input type="number" id="replacement-quantity" placeholder="Qty" value="1" min="1" required>
+                    </div>
+                </div>
+                <button type="submit" class="btn-info btn-large">Initiate Replacement</button>
+            </form>
+            <div id="replacement-info"></div>
+        </div>
+    </div>
+</div>
+
+<!-- Review Returned Items Modal -->
+<div id="review-modal" class="modal" style="display: none;">
+    <div class="modal-content review-modal-content">
+        <span class="close-review-modal">&times;</span>
+        <h2><i class="fas fa-clipboard-check"></i> Review Returned & Replaced Items</h2>
+
+        <div class="review-filters">
+            <button class="filter-btn active" data-filter="all">All Items</button>
+            <button class="filter-btn" data-filter="returns">Returns Only</button>
+            <button class="filter-btn" data-filter="replacements">Replacements Only</button>
+        </div>
+
+        <div id="review-items-list">
+            <!-- Returned and replaced items will appear here for review -->
+        </div>
+    </div>
+</div>
+
+<!-- Modal for showing all products -->
+<div id="all-products-modal" class="modal" style="display: none;">
+    <div class="modal-content">
+        <span class="close-modal">&times;</span>
+        <h2>All Products</h2>
+        <div class="modal-controls">
+            <input type="text" id="modal-search" placeholder="Search products...">
+            <select id="modal-sort">
+                <option value="name">Sort by Name</option>
+                <option value="stock">Sort by Stock</option>
+                <option value="recent">Recently Added</option>
+            </select>
+        </div>
+        <div id="all-products-list">
+            <!-- All products will be displayed here -->
+        </div>
+    </div>
+</div>
+
+<!-- Login Modal -->
+<div id="login-modal" class="modal" style="display: none;">
+    <div class="modal-content login-modal-content">
+        <span class="close-login-modal">&times;</span>
+        <div class="login-form">
+            <h2><i class="fas fa-user-lock"></i> Login</h2>
+            <form id="login-form">
+                <div class="form-group">
+                    <label for="username">Username</label>
+                    <input type="text" id="username" placeholder="Enter username" required>
+                </div>
+                <div class="form-group">
+                    <label for="password">Password</label>
+                    <input type="password" id="password" placeholder="Enter password" required>
+                </div>
+                <div class="form-group">
+                    <select id="user-type">
+                        <option value="shopkeeper">Shopkeeper</option>
+                        <option value="owner">Owner</option>
+                    </select>
+                </div>
+                <button type="submit" class="btn-primary login-btn">Login</button>
+                <div style="margin-top: 20px; text-align: center;">
+                    <button type="button" id="export-data-btn" class="btn-info">Export All Data</button>
+                    <button type="button" id="import-data-btn" class="btn-warning">Import Data</button>
+                    <input type="file" id="import-file-input" style="display: none;" accept=".json">
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore-compat.js"></script>
+<script src="script.js"></script>
+</body>
+</html>
